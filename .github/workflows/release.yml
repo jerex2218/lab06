@@ -3,38 +3,47 @@ name: Release Build
 on:
   push:
     tags:
-      - "v*.*.*"  # Триггер на теги вида vX.Y.Z
+      - "v*.*.*"
 
 jobs:
   linux-packages:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Install dependencies
         run: |
-          sudo apt-get install -y rpm libfmt-dev
+          sudo apt-get update
+          sudo apt-get install -y rpm libfmt-dev cmake
+          
       - name: Build and package
         run: |
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          make
-          cpack -G DEB -G RPM
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DFMT_INSTALL=ON
+          cmake --build build --parallel $(nproc)
+          cd build && cpack -G DEB -G RPM
+          
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-packages
-          path: build/*.deb build/*.rpm
+          path: |
+            build/*.deb
+            build/*.rpm
 
   macos-package:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: brew install cmake
+      
       - name: Build and package
         run: |
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          make
-          cpack -G DragNDrop
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel $(sysctl -n hw.ncpu)
+          cd build && cpack -G DragNDrop
+          
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -45,12 +54,18 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Install WiX
+        run: choco install wixtoolset -y
+      
       - name: Build and package
         run: |
-          mkdir build && cd build
+          mkdir build
+          cd build
           cmake -G "Visual Studio 17 2022" -A x64 ..
-          cmake --build . --config Release
+          cmake --build . --config Release --parallel
           cpack -G WIX
+          
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -65,16 +80,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          
       - name: Create source archives
         run: |
           git archive --format=tar.gz HEAD -o source.tar.gz
           git archive --format=zip HEAD -o source.zip
+          
       - name: Publish Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/linux-packages/*
-            artifacts/macos-package/*
-            artifacts/windows-package/*
+            artifacts/linux-packages/*.deb
+            artifacts/linux-packages/*.rpm
+            artifacts/macos-package/*.dmg
+            artifacts/windows-package/*.msi
             source.tar.gz
             source.zip
