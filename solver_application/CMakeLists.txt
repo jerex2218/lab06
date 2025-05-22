@@ -1,12 +1,24 @@
-cmake_minimum_required(VERSION 3.5)
-project(SolverApplication)
+cmake_minimum_required(VERSION 3.10...3.28)
+project(solver_application)
 
-add_executable(solver equation.cpp)
-target_link_libraries(solver PRIVATE formatter_ex solver_lib)
-target_include_directories(solver PRIVATE 
-    ../formatter_ex_lib
-    ../formatter_lib
-    ../solver_lib
+
+add_executable(solver
+    equation.cpp
 )
 
-install(TARGETS solver DESTINATION bin)
+
+target_include_directories(solver
+    PRIVATE ${CMAKE_SOURCE_DIR}/formatter_ex_lib
+    PRIVATE ${CMAKE_SOURCE_DIR}/solver_lib
+)
+
+
+target_link_libraries(solver
+    PRIVATE formatter_ex_lib
+    PRIVATE solver_lib
+)
+
+
+install(TARGETS solver
+    DESTINATION bin
+)
