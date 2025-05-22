@@ -8,3 +8,5 @@ target_include_directories(solver PRIVATE
     ../formatter_lib
     ../solver_lib
 )
+
+install(TARGETS solver DESTINATION bin)

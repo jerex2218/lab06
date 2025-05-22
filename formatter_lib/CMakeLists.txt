@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.5) 
 project(formatter)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+install(TARGETS solver DESTINATION bin)
+
 add_library(formatter STATIC formatter.cpp)
 target_include_directories(formatter PUBLIC include)
+
+
