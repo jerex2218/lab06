@@ -1,0 +1,93 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake rpm libfmt-dev
+    
+    - name: Build and package
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        make
+        cpack -G DEB -G RPM
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-packages
+        path: build/*.deb build/*.rpm
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build and package
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        make
+        cpack -G DragNDrop
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-package
+        path: build/*.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build and package
+      run: |
+        mkdir build
+        cd build
+        cmake -G "Visual Studio 17 2022" -A x64 ..
+        cmake --build . --config Release
+        cpack -G WIX
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-package
+        path: build/*.msi
+
+  create-release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Create source archives
+      run: |
+        git archive --format=tar.gz HEAD -o source.tar.gz
+        git archive --format=zip HEAD -o source.zip
+
+    - name: Publish Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          artifacts/linux-packages/*
+          artifacts/macos-package/*
+          artifacts/windows-package/*
+          source.tar.gz
+          source.zip
