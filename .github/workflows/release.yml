@@ -9,7 +9,7 @@ jobs:
   linux-packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  
+      - uses: actions/checkout@v4
       
       - name: Install dependencies
         run: |
@@ -33,7 +33,7 @@ jobs:
   macos-package:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4  
+      - uses: actions/checkout@v4
       
       - name: Install dependencies
         run: brew install cmake
@@ -53,7 +53,7 @@ jobs:
   windows-package:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4  
+      - uses: actions/checkout@v4
       
       - name: Install WiX
         run: choco install wixtoolset -y
@@ -79,12 +79,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  
+          fetch-depth: 0
           
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          
+      - name: List artifacts (debug)
+        run: ls -R artifacts
           
       - name: Create source archives
         run: |
@@ -94,12 +97,13 @@ jobs:
       - name: Publish Release
         uses: softprops/action-gh-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}  
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         with:
-          tag_name: ${{ github.ref_name }}  
+          tag_name: ${{ github.ref_name }}
           files: |
-            artifacts/linux-packages/*
-            artifacts/macos-package/*
-            artifacts/windows-package/*
+            artifacts/linux-packages/*.deb
+            artifacts/linux-packages/*.rpm
+            artifacts/macos-package/*.dmg
+            artifacts/windows-package/*.msi
             source.tar.gz
             source.zip
