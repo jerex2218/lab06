@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Essential for tag operations
+        fetch-depth: 0 
 
     - name: Configure Solver
       run: cmake -B ${{github.workspace}}/.build -D PRINT_VERSION=${{ github.ref_name }}
@@ -33,13 +33,13 @@ jobs:
     - name: Verify artifacts
       run: ls -la .build/*.deb .build/*.tar.gz .build/*.zip
 
-    - name: Create or Update Release  # Updated step
+    - name: Create or Update Release 
       uses: ncipollo/release-action@v1.10.0
       with:
         artifacts: ".build/*.deb,.build/*.tar.gz,.build/*.zip"
         tag: ${{ github.ref_name }}
-        update: true  # Key fix: update existing release
-        replace_artifacts: true  # Replace existing assets
+        update: true 
+        replace_artifacts: true  
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload artifacts
