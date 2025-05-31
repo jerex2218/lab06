@@ -1,24 +1,16 @@
+# Top-level CMakeLists.txt
+cmake_minimum_required(VERSION 3.10)
 project(solver)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Add version definition
+if(NOT DEFINED PRINT_VERSION)
+    set(PRINT_VERSION "1.0.0")
+endif()
 
+# Set version before include(CPack)
+set(CMAKE_PROJECT_VERSION ${PRINT_VERSION})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/formatter_ex_lib formatter_ex_lib_dir)
+# ... [rest of your CMake code] ...
 
-add_library(solver_lib ${CMAKE_CURRENT_SOURCE_DIR}/solver_lib/solver.cpp)
-add_executable(solver ${CMAKE_CURRENT_SOURCE_DIR}/solver_application/equation.cpp)
-
-target_include_directories(formatter_ex_lib PUBLIC
-${CMAKE_CURRENT_SOURCE_DIR}/formatter_lib
-${CMAKE_CURRENT_SOURCE_DIR}/formatter_ex_lib
-${CMAKE_CURRENT_SOURCE_DIR}/solver_lib
-)
-
-target_link_libraries(solver formatter_ex_lib formatter_lib solver_lib)
-
-install(TARGETS solver
-    RUNTIME DESTINATION bin
-)
-
-include(CPack.cmake)
+# Move this to AFTER setting variables
+include(CPack)
