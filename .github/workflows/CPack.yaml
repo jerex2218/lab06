@@ -8,9 +8,10 @@ on:
 jobs: 
   build_packages_Linux:
     runs-on: ubuntu-latest
-    # Add write permissions to the token
+    # Add required permissions
     permissions:
-      contents: write  # Required to create releases
+      contents: read
+      releases: write  # Crucial for creating releases
 
     steps:
     - uses: actions/checkout@v4
